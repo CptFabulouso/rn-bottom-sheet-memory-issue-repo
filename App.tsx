@@ -1,116 +1,123 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * Generated with the TypeScript template
- * https://github.com/react-native-community/react-native-template-typescript
- *
- * @format
- */
+import React, {useCallback, useEffect} from 'react';
+import {GestureHandlerRootView, ScrollView} from 'react-native-gesture-handler';
+import {View, Button, StyleSheet, Image, Dimensions} from 'react-native';
+import {NavigationContainer} from '@react-navigation/native';
+// import {createStackNavigator} from '@react-navigation/stack';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
+const picture = require('./picture.jpeg');
 
-import React, {type PropsWithChildren} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+import {BottomSheetModalProvider, BottomSheetModal} from '@gorhom/bottom-sheet';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+const Stack = createNativeStackNavigator();
 
-const Section: React.FC<
-  PropsWithChildren<{
-    title: string;
-  }>
-> = ({children, title}) => {
-  const isDarkMode = useColorScheme() === 'dark';
+const getImages = () => new Array(200).fill(picture);
+
+const HomeScreen = ({navigation}: any) => {
   return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
+    <View style={styles.screen}>
+      <Button
+        title="go to modal screen"
+        onPress={() => {
+          navigation.navigate('SecondScreen');
+        }}
+      />
+    </View>
+  );
+};
+
+const snapPoints = ['85%'];
+const SecondScreen = () => {
+  const bottomSheetModalRef = React.useRef<BottomSheetModal>(null);
+  const [index, setIndex] = React.useState(-1);
+
+  useEffect(() => {
+    const ref = bottomSheetModalRef.current;
+    // mount the modal so contents are pre-rendered before opening
+    ref?.present();
+    return () => {
+      // this does not unmount the modal as is stated here https://gorhom.github.io/react-native-bottom-sheet/modal/methods#dismiss
+      ref?.dismiss();
+    };
+  }, []);
+
+  const handlePresentModalPress = React.useCallback(() => {
+    setIndex(0);
+  }, []);
+
+  const handleIndexChange = useCallback((newIndex: number) => {
+    setIndex(newIndex);
+    // even if we called dismiss here, it does not unmount the modal
+    // if(index === -1){
+    //   bottomSheetModalRef.current?.dismiss();
+    // }
+  }, []);
+
+  return (
+    <View style={styles.screen}>
+      <Button title="show modal" onPress={handlePresentModalPress} />
+      <BottomSheetModal
+        stackBehavior="push"
+        ref={bottomSheetModalRef}
+        index={index}
+        snapPoints={snapPoints}
+        onChange={handleIndexChange}
+        enableContentPanningGesture={false}
+        enableDismissOnClose={false}>
+        <ModalContent data={getImages()} />
+      </BottomSheetModal>
+    </View>
+  );
+};
+
+const ModalContent = ({data}: any) => {
+  useEffect(() => {
+    console.log('ModalContent mounted');
+    return () => {
+      console.log('ModalContent unmounted');
+    };
+  }, []);
+
+  return (
+    <View style={styles.modal}>
+      <ScrollView>
+        {data.map((image: any, index: number) => (
+          <Image key={index} source={image} style={styles.image} />
+        ))}
+      </ScrollView>
     </View>
   );
 };
 
 const App = () => {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+    <GestureHandlerRootView style={styles.flex}>
+      <BottomSheetModalProvider>
+        <NavigationContainer>
+          <Stack.Navigator>
+            <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen name="SecondScreen" component={SecondScreen} />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </BottomSheetModalProvider>
+    </GestureHandlerRootView>
   );
 };
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  flex: {flex: 1},
+  screen: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
+  modal: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
+  image: {
+    width: Dimensions.get('window').width,
+    aspectRatio: 536 / 354,
   },
 });
 

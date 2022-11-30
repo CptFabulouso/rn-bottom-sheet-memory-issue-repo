@@ -1,0 +1,34 @@
+diff --git a/node_modules/@gorhom/bottom-sheet/src/components/bottomSheetModal/BottomSheetModal.tsx b/node_modules/@gorhom/bottom-sheet/src/components/bottomSheetModal/BottomSheetModal.tsx
+index e0070c5..8c6788b 100644
+--- a/node_modules/@gorhom/bottom-sheet/src/components/bottomSheetModal/BottomSheetModal.tsx
++++ b/node_modules/@gorhom/bottom-sheet/src/components/bottomSheetModal/BottomSheetModal.tsx
+@@ -2,6 +2,7 @@ import React, {
+   forwardRef,
+   memo,
+   useCallback,
++  useEffect,
+   useImperativeHandle,
+   useMemo,
+   useRef,
+@@ -76,6 +77,7 @@ const BottomSheetModalComponent = forwardRef<
+   const minimized = useRef(false);
+   const forcedDismissed = useRef(false);
+   const mounted = useRef(false);
++  const unmountRef = useRef(() => {})
+   mounted.current = mount;
+   //#endregion
+ 
+@@ -124,6 +126,13 @@ const BottomSheetModalComponent = forwardRef<
+   );
+   //#endregion
+ 
++  unmountRef.current = unmount;
++  useEffect(() => {
++    return () => {
++      unmountRef.current()
++    }
++  },[])
++
+   //#region bottom sheet methods
+   const handleSnapToIndex = useCallback<BottomSheetMethods['snapToIndex']>(
+     (...args) => {
